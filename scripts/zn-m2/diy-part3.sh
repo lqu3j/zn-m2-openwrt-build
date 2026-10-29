@@ -10,6 +10,14 @@
 # Description: OpenWrt DIY script part 3 (After Install feeds)
 #
 
+# ss links against libselinux when building with SELinux support.
+# Declare the runtime dependency so OpenWrt's package dependency check succeeds.
+sed -i '/^define Package\/ss$/,/^endef$/ {
+  /^[[:space:]]*DEPENDS:=/ {
+    /+libselinux/! s/$/ +libselinux/
+  }
+}' package/network/utils/iproute2/Makefile
+
 # Modify default IP
 #sed -i 's/192.168.1.1/192.168.100.1/g' package/base-files/files/bin/config_generate
 
