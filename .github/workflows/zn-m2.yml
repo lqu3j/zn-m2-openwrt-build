@@ -36,33 +36,28 @@ env:
   TZ: Asia/Shanghai
 
 jobs:
-  # Gate for schedule trigger: only build if upstream Passwall has new version
+  # Build on source/feed/config changes; manual runs always build.
   check:
-    if: github.event_name == 'schedule'
     runs-on: ubuntu-22.04
     outputs:
       should_build: ${{ steps.check.outputs.should_build }}
-      latest_pkg_sha: ${{ steps.check.outputs.latest_pkg_sha }}
+      upstream_fingerprint: ${{ steps.check.outputs.upstream_fingerprint }}
     steps:
     - uses: actions/checkout@v7
 
     - uses: actions/cache/restore@v6
       with:
-        path: /tmp/passwall-cache
-        key: passwall-packages-sha
-        restore-keys: passwall-packages-sha
+        path: /tmp/zn-m2-upstream-cache
+        key: zn-m2-upstream-v1-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: zn-m2-upstream-v1-
 
     - name: Check upstream updates
       id: check
-      env:
-        GH_TOKEN: ${{ github.token }}
       run: bash .github/scripts/zn-m2/check-upstream.sh
 
   build:
     needs: check
-    if: |
-      always() &&
-      (github.event_name == 'workflow_dispatch' || needs.check.outputs.should_build == 'true')
+    if: needs.check.outputs.should_build == 'true'
     runs-on: ubuntu-22.04
 
     steps:
@@ -78,8 +73,8 @@ jobs:
     - name: Clone source code
       working-directory: /workdir
       run: |
-        git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+        git clone "$REPO_URL" -b "$REPO_BRANCH" openwrt
+        ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
 
     - name: Load custom feeds
       run: |
@@ -110,6 +105,7 @@ jobs:
       run: |
         cd openwrt
         make defconfig
+        bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" config .config
         make download -j8
         find dl -size -1024c -exec rm -f {} \;
 
@@ -121,8 +117,12 @@ jobs:
         cd openwrt
         sed -i '/gecoosac/d' .config
         make defconfig
+        bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" config .config
         echo "$(nproc) thread compile (basic)"
-        make -j$(nproc) || make -j1 V=s
+        make -j"$(nproc)" || make -j1 V=s
+        for manifest in bin/targets/*/*/*.manifest; do
+          bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" manifest "$manifest"
+        done
 
     - name: Save BASIC firmware
       run: |
@@ -139,8 +139,12 @@ jobs:
         cd openwrt
         cp /tmp/zn-m2-full.config .config
         make defconfig
+        bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" config .config
         echo "$(nproc) thread compile (gecoosac-v2, incremental)"
-        make -j$(nproc) || make -j1 V=s
+        make -j"$(nproc)" || make -j1 V=s
+        for manifest in bin/targets/*/*/*.manifest; do
+          bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" manifest "$manifest"
+        done
 
     # ============================================================
     # Organize & Publish
@@ -163,21 +167,19 @@ jobs:
         body_path: release.txt
         files: /tmp/release-firmware/*
 
-    - name: Save packages SHA cache
+    - name: Save successful source fingerprint
       if: success()
       env:
-        GH_TOKEN: ${{ github.token }}
+        UPSTREAM_FINGERPRINT: ${{ needs.check.outputs.upstream_fingerprint }}
       run: |
-        LATEST_SHA=$(gh api repos/Openwrt-Passwall/openwrt-passwall-packages/commits/main --jq .sha)
-        mkdir -p /tmp/passwall-cache
-        echo "$LATEST_SHA" > /tmp/passwall-cache/packages-sha
-        echo "CACHE_KEY=passwall-packages-sha-$LATEST_SHA" >> $GITHUB_ENV
+        mkdir -p /tmp/zn-m2-upstream-cache
+        echo "$UPSTREAM_FINGERPRINT" > /tmp/zn-m2-upstream-cache/fingerprint
 
     - uses: actions/cache/save@v6
       if: success()
       with:
-        path: /tmp/passwall-cache
-        key: ${{ env.CACHE_KEY }}
+        path: /tmp/zn-m2-upstream-cache
+        key: zn-m2-upstream-v1-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Delete old workflows runs
       if: success()

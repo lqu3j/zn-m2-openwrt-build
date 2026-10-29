@@ -1,31 +1,29 @@
 #!/bin/bash
 set -euo pipefail
 
-MANIFEST=$(ls "$FIRMWARE"/*.manifest | head -1)
+MANIFESTS=("$FIRMWARE"/*.manifest)
+MANIFEST="${MANIFESTS[0]}"
+[ -f "$MANIFEST" ] || { echo "ERROR: firmware manifest not found" >&2; exit 1; }
+OPENVPN_VER=$(awk -F ' - ' '$1 == "openvpn-openssl" {print $2}' "$MANIFEST")
+[ -n "$OPENVPN_VER" ] || { echo "ERROR: OpenVPN missing from firmware manifest" >&2; exit 1; }
 
-PASSWALL_VER=$(grep luci-app-passwall "$MANIFEST" | awk -F" - " '{print $2}')
-if [ -z "$PASSWALL_VER" ]; then
-  echo "ERROR: could not extract Passwall version from manifest"
-  exit 1
-fi
-echo "Passwall version: $PASSWALL_VER"
-echo "PASSWALL_VER=$PASSWALL_VER" >> "$GITHUB_ENV"
-echo "release_tag=${PASSWALL_VER}" >> "$GITHUB_OUTPUT"
+BUILD_DATE=$(date -u +%Y%m%d)
+RELEASE_TAG="zn-m2-${BUILD_DATE}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+echo "release_tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+echo "release_name=ZN-M2 ${BUILD_DATE} OpenVPN" >> "$GITHUB_OUTPUT"
 
-touch release.txt
-echo "## ZN-M2 固件" >> release.txt
-echo "" >> release.txt
-echo "**Passwall 版本:** \`$PASSWALL_VER\`" >> release.txt
-echo "" >> release.txt
-grep xray-core   "$MANIFEST" | awk -F" - " '{print $2}' | awk -F"-" '{print "**Xray:** `"$1"`"}'        >> release.txt || true
-grep sing-box    "$MANIFEST" | awk -F" - " '{print $2}' | awk -F"-" '{print "**Sing-Box:** `"$1"`"}'    >> release.txt || true
-grep hysteria    "$MANIFEST" | awk -F" - " '{print $2}' | awk -F"-" '{print "**Hysteria:** `"$1"`"}'    >> release.txt || true
-grep chinadns-ng "$MANIFEST" | awk -F" - " '{print $2}' | awk -F"-" '{print "**ChinaDNS-NG:** `"$1"`"}' >> release.txt || true
-echo "" >> release.txt
-echo "### 变体说明" >> release.txt
-echo "- **basic**: 纯净版，不含集客AC控制器" >> release.txt
-echo "- **gecoosac-v2**: 含集客AC控制器 V2" >> release.txt
-echo "" >> release.txt
-echo "详细包信息请查看 manifest 文件" >> release.txt
+cat > release.txt <<RELEASE
+## ZN-M2 固件
 
-echo "release_name=ZN-M2 Passwall ${PASSWALL_VER}" >> "$GITHUB_OUTPUT"
+**OpenVPN:** \`$OPENVPN_VER\`
+
+- 不内置 Passwall、其他代理核心、Lucky、NPS 和 USB 支持。
+- sing-box 二进制由用户自行上传；保留 TUN、路由工具、诊断模块和 CA 证书。
+- sing-box 的配置、启动服务及流量接管规则由用户自行管理。
+
+### 变体说明
+- **basic**: 不含集客 AC 控制器。
+- **gecoosac-v2**: 含集客 AC 控制器 V2。
+
+完整软件包列表请查看对应的 manifest 文件。
+RELEASE

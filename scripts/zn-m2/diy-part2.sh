@@ -9,6 +9,4 @@
 # File name: diy-part2.sh
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 #
-#优先安装 passwall 源
-./scripts/feeds install -a -f -p passwall_packages
-./scripts/feeds install -a -f -p passwall_luci
+# No feed priority overrides are required.

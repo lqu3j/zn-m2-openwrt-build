@@ -15,12 +15,14 @@
 
 #修改版本信息
 sed -i "s/DISTRIB_DESCRIPTION='*.*'/DISTRIB_DESCRIPTION='OpenWrt IPQ6000 ZN-M2 (build time: $(date +%Y%m%d))'/g"  package/base-files/files/etc/openwrt_release
-# 替换golang版本为1.26
-rm -rf feeds/packages/lang/golang
-git clone https://github.com/sbwml/packages_lang_golang -b 27.x feeds/packages/lang/golang
-
 # ttyd免登陆
 sed -i -r 's#/bin/login#/bin/login -f root#g' feeds/packages/utils/ttyd/files/ttyd.config
 
-# design修改proxy链接
-sed -i -r "s#navbar_proxy = 'openclash'#navbar_proxy = 'passwall'#g" feeds/luci/themes/luci-theme-design/luasrc/view/themes/design/header.htm
+# Exclude USB drivers also selected by the ZN-M2 device profile.
+sed -i '/^define Device\/zn_m2$/,/^endef$/ s/^[[:space:]]*DEVICE_PACKAGES := kmod-usb3 kmod-usb-phy-msm$/\tDEVICE_PACKAGES := -kmod-usb3 -kmod-usb-phy-msm/' target/linux/ipq60xx/image/Makefile
+
+# Remove the Design theme shortcut to an absent proxy application.
+sed -i -E \
+  -e "/^[[:space:]]*(local )?navbar_proxy[[:space:]]*=/d" \
+  -e "/<% if navbar_proxy == /,/<% end -%>/d" \
+  feeds/luci/themes/luci-theme-design/luasrc/view/themes/design/header.htm
