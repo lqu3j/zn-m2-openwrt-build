@@ -19,12 +19,8 @@ copy_with_suffix() {
   fi
 }
 
-for f in /tmp/firmware-basic/*; do
-  copy_with_suffix "$f" "basic"
-done
-
 for f in *; do
-  [ -f "$f" ] && copy_with_suffix "$f" "gecoosac-v2"
+  [ -f "$f" ] && copy_with_suffix "$f" "basic"
 done
 
 echo "Release firmware files:"

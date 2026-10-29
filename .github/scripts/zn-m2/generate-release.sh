@@ -21,9 +21,7 @@ cat > release.txt <<RELEASE
 - sing-box 二进制由用户自行上传；保留 TUN、路由工具、诊断模块和 CA 证书。
 - sing-box 的配置、启动服务及流量接管规则由用户自行管理。
 
-### 变体说明
-- **basic**: 不含集客 AC 控制器。
-- **gecoosac-v2**: 含集客 AC 控制器 V2。
+仅发布 **basic** 固件，不集成集客 AC 控制器。
 
 完整软件包列表请查看对应的 manifest 文件。
 RELEASE

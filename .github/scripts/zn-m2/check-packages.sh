@@ -15,7 +15,7 @@ case "$MODE" in
   *) echo "ERROR: unknown package list format: $MODE" >&2; exit 1 ;;
 esac
 
-FORBIDDEN='^(luci-app-(passwall[0-9]*|lucky|nps)|luci-i18n-(passwall[0-9]*|lucky|nps)-.*|lucky|npc|sing-box|haproxy|hysteria|xray-.*|v2ray-(geoip|geosite|plugin)|chinadns-ng|dns2socks|dns2tcp|ipt2socks|microsocks|simple-obfs-client|ssocks|tcping|shadowsocks.*|trojan.*|naiveproxy|tuic-client|shadow-tls|geoview|kmod-usb.*)$'
+FORBIDDEN='^(gecoosac|luci-app-gecoosac|luci-i18n-gecoosac-.*|luci-app-(passwall[0-9]*|lucky|nps)|luci-i18n-(passwall[0-9]*|lucky|nps)-.*|lucky|npc|sing-box|haproxy|hysteria|xray-.*|v2ray-(geoip|geosite|plugin)|chinadns-ng|dns2socks|dns2tcp|ipt2socks|microsocks|simple-obfs-client|ssocks|tcping|shadowsocks.*|trojan.*|naiveproxy|tuic-client|shadow-tls|geoview|kmod-usb.*)$'
 if UNEXPECTED=$(grep -E "$FORBIDDEN" <<< "$PACKAGES"); then
   printf 'ERROR: excluded packages in %s:\n%s\n' "$INPUT" "$UNEXPECTED" >&2
   exit 1

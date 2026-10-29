@@ -2,7 +2,7 @@
 # https://github.com/P3TERX/Actions-OpenWrt
 #
 # File: .github/workflows/zn-m2.yml
-# Description: Build OpenWrt ZN-M2 firmware (basic + gecoosac-v2) using GitHub Actions
+# Description: Build OpenWrt ZN-M2 firmware (basic only) using GitHub Actions
 #
 # Copyright (c) 2019-2024 P3TERX <https://p3terx.com>
 #
@@ -99,7 +99,6 @@ jobs:
         [ -e "$CONFIG_FILE" ] && cp "$CONFIG_FILE" openwrt/.config
         cd openwrt
         bash "$GITHUB_WORKSPACE/$DIY_P3_SH"
-        cp .config /tmp/zn-m2-full.config
 
     - name: Download packages
       run: |
@@ -110,37 +109,14 @@ jobs:
         find dl -size -1024c -exec rm -f {} \;
 
     # ============================================================
-    # Build 1: BASIC (without gecoosac)
+    # Build BASIC firmware
     # ============================================================
     - name: Build BASIC firmware
       run: |
         cd openwrt
-        sed -i '/gecoosac/d' .config
         make defconfig
         bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" config .config
         echo "$(nproc) thread compile (basic)"
-        make -j"$(nproc)" || make -j1 V=s
-        for manifest in bin/targets/*/*/*.manifest; do
-          bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" manifest "$manifest"
-        done
-
-    - name: Save BASIC firmware
-      run: |
-        cd openwrt/bin/targets/*/*
-        rm -rf packages
-        mkdir -p /tmp/firmware-basic
-        cp -a . /tmp/firmware-basic/
-
-    # ============================================================
-    # Build 2: GECOSAC-V2 (with gecoosac, incremental)
-    # ============================================================
-    - name: Build GECOSAC firmware (incremental)
-      run: |
-        cd openwrt
-        cp /tmp/zn-m2-full.config .config
-        make defconfig
-        bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" config .config
-        echo "$(nproc) thread compile (gecoosac-v2, incremental)"
         make -j"$(nproc)" || make -j1 V=s
         for manifest in bin/targets/*/*/*.manifest; do
           bash "$GITHUB_WORKSPACE/.github/scripts/zn-m2/check-packages.sh" manifest "$manifest"

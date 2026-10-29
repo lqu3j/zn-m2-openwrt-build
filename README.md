@@ -20,14 +20,10 @@
 依赖展开后，`pdnsd-alt` 仍由系统默认的 TurboACC 引入；
 `wget-ssl` 和 `libpcre` 也仍被保留软件引用，因此不会强制移除。
 
-## 固件变体
+## 固件版本
 
-每次构建产出两个变体，发布在同一个 GitHub Release 中：
-
-| 变体 | 说明 | 文件名后缀 |
-|------|------|-----------|
-| **basic** | 不含集客 AC 控制器 | `-basic` |
-| **gecoosac-v2** | 含集客 AC 控制器 V2 | `-gecoosac-v2` |
+仅编译和发布 **basic** 固件，文件名保留 `-basic` 后缀。
+不集成集客 AC 控制器，不下载其 feed，也不再构建控制器版本。
 
 ## 自动构建与更新
 
@@ -36,10 +32,10 @@
 - **失败重试**：仅成功发布后缓存来源指纹；构建失败将在下一次定时检测时重试。
 - **Release Tag**：`zn-m2-YYYYMMDD-<run_id>-<run_attempt>`，不再依赖 Passwall 版本号。
 
-构建先下载完整配置的软件包，再分别编译 basic 与 gecoosac-v2。
-发布包含两个变体的固件、manifest 和构建配置，可据此核对实际集成的包。
-构建时自动检查展开后的配置及两个变体的 manifest：必要运行组件缺失，
-或代理插件、内网穿透程序、USB 驱动重新被选中时，立即报错停止发布。
+构建仅下载和编译 basic 配置的软件包。
+发布包含 basic 固件、manifest 和构建配置，可据此核对实际集成的包。
+构建时自动检查展开后的配置及 manifest：必要运行组件缺失，
+或集客 AC、代理插件、内网穿透程序、USB 驱动重新被选中时，立即报错停止发布。
 
 ## 保留的软件
 
@@ -75,9 +71,9 @@ arping -I br-lan 192.168.1.2    # 检查局域网二层连通性
 
 | 场景 | 文件 |
 |------|------|
-| uboot 刷机 | `*factory-basic.ubi` 或 `*factory-gecoosac-v2.ubi` |
-| 系统升级 | `*sysupgrade-basic.bin` 或 `*sysupgrade-gecoosac-v2.bin` |
-| 软件包清单 | `*basic.manifest` 或 `*gecoosac-v2.manifest` |
+| uboot 刷机 | `*factory-basic.ubi` |
+| 系统升级 | `*sysupgrade-basic.bin` |
+| 软件包清单 | `*basic.manifest` |
 
 ## 手动构建
 
