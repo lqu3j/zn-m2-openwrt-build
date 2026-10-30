@@ -44,6 +44,7 @@
 | VPN | OpenVPN、WireGuard |
 | sing-box 运行环境 | TUN、完整 ip 命令、网络诊断模块、CA 证书 |
 | DDNS | ddns-scripts（阿里云 / DNSPod） |
+| IPTV | udpxy（UDP 组播转 HTTP）、LuCI 管理界面 |
 | 管理 | ttyd（Web 终端）、htop、bash、curl |
 | 网络排障 | tcpdump（完整版本）、ss、ethtool、dig、mtr、arping |
 | BusyBox 常用命令 | nslookup、netstat（支持 `-p` 查看进程）、ping / ping6、traceroute / traceroute6、nc |
