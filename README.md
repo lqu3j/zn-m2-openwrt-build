@@ -8,9 +8,18 @@
 ## 使用目标
 
 保留 OpenVPN，以及独立运行 sing-box 所需的 TUN、`ip-full`、
-`kmod-inet-diag`、`kmod-netlink-diag` 和 CA 证书。
+`kmod-inet-diag`、`kmod-netlink-diag` 和 CA 证书，并加入 `auto_redirect`
+使用的 `nftables`、`kmod-nft-core`、`kmod-nft-nat`、`kmod-nft-nat6`，
+以及用于预匹配的 `kmod-nft-queue`、`kmod-nfnetlink-queue`。
 **固件不内置 sing-box 二进制**，由用户刷机后自行上传，并管理配置、启动服务和流量接管规则。
 上传前需确认所选二进制支持设备架构及当前 4.4 内核；刷机后验证 TUN、DNS 和重启启动行为。
+
+这些包仅补齐当前源码提供的依赖，不代表 4.4 内核已支持所选 sing-box 的全部功能。
+[`auto_redirect`](https://sing-box.sagernet.org/configuration/inbound/tun/#auto_redirect)
+需要启用 `auto_route` 并使用 nftables；其 inet NAT 所需能力在上游 Linux 5.2 才加入，
+且上游 4.18 之前不能同时使用 iptables NAT 与 nftables NAT，参见
+[nftables NAT 文档](https://wiki.nftables.org/wiki-nftables/index.php/Performing_Network_Address_Translation_(NAT))。
+本固件保留 iptables 防火墙；若当前厂商内核未回移相关能力，仍需升级内核或改用兼容的流量接管方式。
 
 不集成 Passwall、Haproxy、Hysteria、Xray、V2Ray 地理数据、Lucky、NPS
 及代理专用辅助程序；不保留 USB 支持。
@@ -42,11 +51,11 @@
 | 分类 | 软件 |
 |------|------|
 | VPN | OpenVPN、WireGuard |
-| sing-box 运行环境 | TUN、完整 ip 命令、网络诊断模块、CA 证书 |
+| sing-box 运行环境 | TUN、完整 ip 命令、网络诊断模块、CA 证书、nftables / IPv4 与 IPv6 NAT / NFQUEUE 模块（auto_redirect 需验证内核兼容性） |
 | DDNS | ddns-scripts（阿里云 / DNSPod） |
 | IPTV | udpxy（UDP 组播转 HTTP）、LuCI 管理界面 |
 | 管理 | ttyd（Web 终端）、htop、bash、curl |
-| 网络排障 | tcpdump（完整版本）、ss、ethtool、dig、mtr、arping |
+| 网络排障 | tcpdump（完整版本）、ss、ethtool、dig、mtr、arping、iperf3（吞吐量测试） |
 | BusyBox 常用命令 | nslookup、netstat（支持 `-p` 查看进程）、ping / ping6、traceroute / traceroute6、nc |
 | 主题 | Argon、Design（移除代理快捷入口） |
 | 其他 | UPnP、WOL 唤醒、ARP 绑定、coremark / stress-ng |
