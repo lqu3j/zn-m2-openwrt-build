@@ -21,7 +21,7 @@ if UNEXPECTED=$(grep -E "$FORBIDDEN" <<< "$PACKAGES"); then
   exit 1
 fi
 
-for package in openvpn-openssl luci-app-openvpn kmod-tun ip-full kmod-inet-diag kmod-netlink-diag ca-bundle nftables kmod-nft-core kmod-nft-nat kmod-nft-nat6 kmod-nft-queue kmod-nfnetlink-queue firewall iptables kmod-ipt-nat dnsmasq-full busybox tcpdump ss ethtool bind-dig mtr-nojson iputils-arping iperf3 udpxy luci-app-udpxy; do
+for package in openvpn-openssl luci-app-openvpn kmod-tun ip-full kmod-inet-diag kmod-netlink-diag ca-bundle nftables kmod-nft-core kmod-nft-nat kmod-nft-nat6 kmod-nft-queue kmod-nfnetlink-queue kmod-ipt-nfqueue firewall iptables kmod-ipt-nat dnsmasq-full busybox tcpdump ss ethtool bind-dig mtr-nojson iputils-arping iperf3 udpxy luci-app-udpxy; do
   if ! grep -Fxq "$package" <<< "$PACKAGES"; then
     echo "ERROR: required package missing from $INPUT: $package" >&2
     exit 1

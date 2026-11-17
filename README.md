@@ -11,6 +11,9 @@
 `kmod-inet-diag`、`kmod-netlink-diag` 和 CA 证书，并加入 `auto_redirect`
 使用的 `nftables`、`kmod-nft-core`、`kmod-nft-nat`、`kmod-nft-nat6`，
 以及用于预匹配的 `kmod-nft-queue`、`kmod-nfnetlink-queue`。
+同时保留 iptables 的 `kmod-ipt-nfqueue`；`kmod-nft-queue` 和 `kmod-ipt-nfqueue`
+分别启用 `CONFIG_NFT_QUEUE` 和 `CONFIG_NETFILTER_XT_TARGET_NFQUEUE` 对应的内核模块。
+构建脚本会补齐当前源码缺失的 `NFT_QUEUE` 映射，确保打包 `nft_queue.ko`。
 **固件不内置 sing-box 二进制**，由用户刷机后自行上传，并管理配置、启动服务和流量接管规则。
 上传前需确认所选二进制支持设备架构及当前 4.4 内核；刷机后验证 TUN、DNS 和重启启动行为。
 

@@ -10,6 +10,16 @@
 # Description: OpenWrt DIY script part 3 (After Install feeds)
 #
 
+# This source defines kmod-nft-queue but omits its kernel/module mapping.
+# Keep the guard so repeated runs or an upstream fix do not duplicate it.
+if ! grep -Fq '$(call nf_add,NFT_QUEUE,' include/netfilter.mk; then
+  sed -i '/^# nftables$/a\$(eval $(if $(NF_KMOD),$(call nf_add,NFT_QUEUE,CONFIG_NFT_QUEUE, $(P_XT)nft_queue),))' include/netfilter.mk
+  grep -Fq '$(call nf_add,NFT_QUEUE,' include/netfilter.mk || {
+    echo 'ERROR: failed to add NFT_QUEUE kernel/module mapping' >&2
+    exit 1
+  }
+fi
+
 # ss links against libselinux when building with SELinux support.
 # Declare the runtime dependency so OpenWrt's package dependency check succeeds.
 sed -i '/^define Package\/ss$/,/^endef$/ {
