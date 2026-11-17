@@ -19,6 +19,7 @@ cat > release.txt <<RELEASE
 
 - 不内置 Passwall、其他代理核心、Lucky、NPS 和 USB 支持。
 - 集成 udpxy（含 LuCI 界面）和 iperf3。
+- 集成 SFTP 服务端（Dropbear + openssh-sftp-server）及 AdGuard Home（自带 Web 界面，默认需手动启用）。
 - sing-box 二进制由用户自行上传；保留 TUN、路由工具、诊断模块、CA 证书及 nftables / NAT / NFQUEUE 依赖。
 - auto_redirect 在当前 4.4 内核上的兼容性仍需验证，依赖齐全不代表内核能力齐全，详见仓库 README。
 - sing-box 的配置、启动服务及流量接管规则由用户自行管理。

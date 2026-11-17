@@ -58,6 +58,8 @@
 | DDNS | ddns-scripts（阿里云 / DNSPod） |
 | IPTV | udpxy（UDP 组播转 HTTP）、LuCI 管理界面 |
 | 管理 | ttyd（Web 终端）、htop、bash、curl |
+| 文件传输 | Dropbear SSH、openssh-sftp-server（SFTP 服务端，自动引入 libopenssl / zlib 依赖） |
+| DNS 过滤 | AdGuard Home（自带 Web 管理界面，默认需手动启用） |
 | 网络排障 | tcpdump（完整版本）、ss、ethtool、dig、mtr、arping、iperf3（吞吐量测试） |
 | BusyBox 常用命令 | nslookup、netstat（支持 `-p` 查看进程）、ping / ping6、traceroute / traceroute6、nc |
 | 主题 | Argon、Design（移除代理快捷入口） |
@@ -77,6 +79,22 @@ mtr -n -r -c 10 1.1.1.1       # 查看沿途延迟和丢包
 ethtool eth0                   # 查看驱动支持的网口信息
 arping -I br-lan 192.168.1.2    # 检查局域网二层连通性
 ```
+
+SFTP 使用现有 SSH 地址、端口和账户，例如 `sftp root@192.168.1.1`。
+
+AdGuard Home 沿用 feed 的默认配置，首次使用时通过 SSH 启用：
+
+```sh
+uci set adguardhome.config.enabled='1'
+uci commit adguardhome
+/etc/init.d/adguardhome enable
+/etc/init.d/adguardhome start
+```
+
+随后访问 `http://192.168.1.1:3000` 完成初始化。DNS 监听端口需与现有
+dnsmasq 协调，避免同时占用 53 端口；配置文件为 `/etc/adguardhome.yaml`。
+默认工作目录 `/var/adguardhome` 位于临时存储，重启后不保留查询日志等运行数据；
+需要持久化时可在 `/etc/config/adguardhome` 中调整 `workdir`。
 
 ## 刷机与升级
 
